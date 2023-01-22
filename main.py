@@ -110,7 +110,7 @@ class Net(pl.LightningModule):
         return loss
 
     def training_epoch_end(self, outputs):
-        self.log("lr", self.optimizer.param_groups[0]["lr"], on_epoch=self.current_epoch)
+        self.log("lr", self.optimizer.param_groups[0]["lr"])
 
     def validation_step(self, batch, batch_idx):
         img, label = batch
@@ -147,8 +147,8 @@ if __name__ == "__main__":
         )
         refresh_rate = 1
     net = Net(args)
-    trainer = pl.Trainer(precision=args.precision,fast_dev_run=args.dry_run, gpus=args.gpus, benchmark=args.benchmark, logger=logger, max_epochs=args.max_epochs, weights_summary="full", progress_bar_refresh_rate=refresh_rate)
-    trainer.fit(model=net, train_dataloader=train_dl, val_dataloaders=test_dl)
+    trainer = pl.Trainer(precision=args.precision,fast_dev_run=args.dry_run, gpus=args.gpus, benchmark=args.benchmark, logger=logger, max_epochs=args.max_epochs)
+    trainer.fit(model=net, train_dataloaders=train_dl, val_dataloaders=test_dl)
     if not args.dry_run:
         model_path = f"weights/{experiment_name}.pth"
         torch.save(net.state_dict(), model_path)
