@@ -11,6 +11,7 @@ import numpy as np
 
 from utils import get_model, get_dataset, get_experiment_name, get_criterion
 from da import CutMix, MixUp
+from distutils.util import strtobool
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--api-key", help="API Key for Comet.ml")
@@ -46,15 +47,15 @@ parser.add_argument("--off-cls-token", action="store_true")
 parser.add_argument("--seed", default=42, type=int)
 parser.add_argument("--project-name", default="VisionTransformer")
 ###Monarch configs
-parser.add_argument("--use_monarch", default=False,type=bool)
+parser.add_argument("--use_monarch", default=False, type=bool)
 parser.add_argument("--lam",default=0.003,type=float)
-parser.add_argument("--bidirectional",default=False,type=bool)
+#parser.add_argument("--bidirectional",dest="bidirectional",type=lambda x:bool(strtobool(x)) ) there is a bug here (elliot Jan 23)
 parser.add_argument("--kernel_dropout",default=0.2,type=float)
-parser.add_argument("--learn_dft_mat",default=True,type=bool)
+parser.add_argument("--learn_dft_mat",dest="learn_dft_mat",type=lambda x:bool(strtobool(x)) )
 parser.add_argument("--learning_rate",default=0.001,type=float)
 parser.add_argument("--weight_init",default="random",type=str) #hippo and sgconv not supported
 parser.add_argument("--dft_lr",default=0.0001,type=float)
-parser.add_argument("--learn_ifft",default=True,type=bool)
+parser.add_argument("--learn_ifft",dest="learn_ifft",type=lambda x:bool(strtobool(x)))
 parser.add_argument("--forward_drop",default=0,type=float)
 parser.add_argument("--fft_dropout",default=0,type=float)
 

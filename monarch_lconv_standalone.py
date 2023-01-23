@@ -445,12 +445,13 @@ class MonarchConv(OptimModule):
         self.channels = channels
         self.learn_ifft = learn_ifft
         self.bidirectional = bidirectional
+        if self.bidirectional:
+            self.channels*=2
         self.block_fft_conv_args = {"dft_lr":dft_lr,"dropout":fft_dropout,"learn_dft_matrices": learn_dft_mat, "max_m":m_max}
         self.kernel_args ={"channels":self.channels,"learning_rate": learning_rate,"lam":lam,"device":device,
                     "dtype":torch.float,"causal": causal,"kernel_dropout":kernel_dropout,"weight_init": weight_init,
                     "sequence_d":sequence_d,"hidden_state_d":hidden_state_d, "scale_factor": scale_factor, "use_prox":use_prox,"use_prox_lam":use_prox_lam}
-        if self.bidirectional:
-            self.channels*=2
+        
         # SSM Kernel
         self.forward_drop = nn.Dropout(p=forward_drop)
         self.D = nn.Parameter(torch.randn(channels, self.H)).cuda()
