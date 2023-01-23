@@ -47,7 +47,7 @@ parser.add_argument("--off-cls-token", action="store_true")
 parser.add_argument("--seed", default=42, type=int)
 parser.add_argument("--project-name", default="VisionTransformer")
 ###Monarch configs
-parser.add_argument("--use_monarch", default=False, type=bool)
+parser.add_argument("--use_monarch", dest="use_monarch", type=lambda x:bool(strtobool(x)))
 parser.add_argument("--lam",default=0.003,type=float)
 #parser.add_argument("--bidirectional",dest="bidirectional",type=lambda x:bool(strtobool(x)) ) there is a bug here (elliot Jan 23)
 parser.add_argument("--kernel_dropout",default=0.2,type=float)

@@ -12,7 +12,6 @@ class TransformerEncoder(nn.Module):
         self.msa = MultiHeadSelfAttention(feats, head=head, dropout=dropout)
         self.la2 = nn.LayerNorm(feats)
         self.use_monarch = use_monarch
-        
         if not self.use_monarch:
             self.mlp = nn.Sequential(
                 nn.Linear(feats, mlp_hidden),
