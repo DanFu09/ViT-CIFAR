@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchsummary
+from monarch_lconv_standalone import MonarchConv
 
 
 class TransformerEncoder(nn.Module):
@@ -19,9 +20,12 @@ class TransformerEncoder(nn.Module):
             nn.Dropout(dropout),
         )
 
+        self.monarch_conv = MonarchConv(65,feats) #Hardcoded elliot (Jan 22, will fix later)
+
     def forward(self, x):
         out = self.msa(self.la1(x)) + x
-        out = self.mlp(self.la2(out)) + out
+        #out = self.mlp(self.la2(out)) + out
+        out = self.monarch_conv(x)
         return out
 
 
