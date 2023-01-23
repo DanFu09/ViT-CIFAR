@@ -45,6 +45,20 @@ parser.add_argument("--mlp-hidden", default=384, type=int)
 parser.add_argument("--off-cls-token", action="store_true")
 parser.add_argument("--seed", default=42, type=int)
 parser.add_argument("--project-name", default="VisionTransformer")
+###Monarch configs
+parser.add_argument("--use_monarch", default=False,type=bool)
+parser.add_argument("--lam",default=0.003,type=float)
+parser.add_argument("--bidirectional",default=False,type=bool)
+parser.add_argument("--kernel_dropout",default=0.2,type=float)
+parser.add_argument("--learn_dft_mat",default=True,type=bool)
+parser.add_argument("--learning_rate",default=0.001,type=float)
+parser.add_argument("--weight_init",default="random",type=str) #hippo and sgconv not supported
+parser.add_argument("--dft_lr",default=0.0001,type=float)
+parser.add_argument("--learn_ifft",default=True,type=bool)
+parser.add_argument("--forward_drop",default=0,type=float)
+parser.add_argument("--fft_dropout",default=0,type=float)
+
+
 args = parser.parse_args()
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)

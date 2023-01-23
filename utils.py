@@ -20,6 +20,11 @@ def get_criterion(args):
 def get_model(args):
     if args.model_name == 'vit':
         from vit import ViT
+        kwargs = {"lam":args.lam,"bidirectional":args.bidirectional,"kernel_dropout":args.kernel_dropout,
+                "learn_dft_mat":args.learn_dft_mat,"learning_rate":args.learning_rate,
+                "weight_init":args.weight_init,
+                "dft_lr":args.dft_lr,"learn_ifft":args.learn_ifft,"forward_drop":args.forward_drop,
+                "fft_dropout":args.fft_dropout}
         net = ViT(
             args.in_c, 
             args.num_classes, 
@@ -30,7 +35,9 @@ def get_model(args):
             num_layers=args.num_layers,
             hidden=args.hidden,
             head=args.head,
-            is_cls_token=args.is_cls_token
+            is_cls_token=args.is_cls_token,
+            use_monarch=args.use_monarch,
+            **kwargs
             )
     else:
         raise NotImplementedError(f"{args.model_name} is not implemented yet...")

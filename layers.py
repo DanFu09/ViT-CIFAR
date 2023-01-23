@@ -6,26 +6,30 @@ from monarch_lconv_standalone import MonarchConv
 
 
 class TransformerEncoder(nn.Module):
-    def __init__(self, feats:int, mlp_hidden:int, head:int=8, dropout:float=0.):
+    def __init__(self, feats:int, mlp_hidden:int, head:int=8, dropout:float=0.,use_monarch=False,**kwargs):
         super(TransformerEncoder, self).__init__()
         self.la1 = nn.LayerNorm(feats)
         self.msa = MultiHeadSelfAttention(feats, head=head, dropout=dropout)
         self.la2 = nn.LayerNorm(feats)
-        self.mlp = nn.Sequential(
-            nn.Linear(feats, mlp_hidden),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(mlp_hidden, feats),
-            nn.GELU(),
-            nn.Dropout(dropout),
-        )
-
-        self.monarch_conv = MonarchConv(65,feats) #Hardcoded elliot (Jan 22, will fix later)
-
+        self.use_monarch = use_monarch
+        
+        if not self.use_monarch:
+            self.mlp = nn.Sequential(
+                nn.Linear(feats, mlp_hidden),
+                nn.GELU(),
+                nn.Dropout(dropout),
+                nn.Linear(mlp_hidden, feats),
+                nn.GELU(),
+                nn.Dropout(dropout),
+            )
+        else:
+            self.monarch_conv = MonarchConv(65,feats,**kwargs) #Hardcoded elliot (Jan 22, will fix later)
     def forward(self, x):
         out = self.msa(self.la1(x)) + x
-        #out = self.mlp(self.la2(out)) + out
-        out = self.monarch_conv(x)
+        if not self.use_monarch:
+            out = self.mlp(self.la2(out)) + out
+        else:
+            out = self.monarch_conv(x)
         return out
 
 
