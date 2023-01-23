@@ -28,7 +28,7 @@ class TransformerEncoder(nn.Module):
         if not self.use_monarch:
             out = self.mlp(self.la2(out)) + out
         else:
-            out = self.monarch_conv(x)
+            out = self.monarch_conv(self.la2(out))+out
         return out
 
 

@@ -166,28 +166,6 @@ def block_fft(
     m = max_m
     return _cooley_tukey(k, n, m, dft_matrix, max_m, **kwargs)
 
-def block_fftconv(u, k, dft_matrix=ref_dft_matrix, **kwargs):
-    '''Compute the convolution of u and k using the block FFT.
-    
-    The dft_matrix function is overwriteable
-    so that we can replace it with learnable parameters in a model.
-
-    Currently we do not overwrite the backwards pass.
-    '''
-    N = u.shape[-1]
-    assert math.log(N, 2).is_integer(), 'N must be a power of 2'
-    
-    k_f = block_fft(k.to(torch.complex64), 2*N, dft_matrix, **kwargs)
-    u_f = block_fft(u.to(torch.complex64), 2*N, dft_matrix, **kwargs)
-    prod = k_f * u_f
-    return torch.fft.ifft(prod, n=2*N, dim=-1).real[..., :N]
-
-def fftconv_ref(u, k):
-    N = u.shape[-1]
-
-    k_f = torch.fft.rfft(k, n=2*N, dim=-1) / (2 * N)
-    u_f = torch.fft.rfft(u, n=2*N, dim=-1)
-    return torch.fft.irfft(k_f * u_f, n=2*N, norm='forward')[..., :N]
 
 class BlockFFT(OptimModule):
     '''
@@ -445,9 +423,12 @@ class MonarchConv(OptimModule):
         self.channels = channels
         self.learn_ifft = learn_ifft
         self.bidirectional = bidirectional
+        self.lam = lam
+        self.m_max = m_max
+        self.learning_rate = learning_rate
         if self.bidirectional:
             self.channels*=2
-        self.block_fft_conv_args = {"dft_lr":dft_lr,"dropout":fft_dropout,"learn_dft_matrices": learn_dft_mat, "max_m":m_max}
+        self.block_fft_conv_args = {"dft_lr":dft_lr,"dropout":fft_dropout,"learn_dft_matrices": learn_dft_mat, "max_m":m_max,"learn_additive":True}
         self.kernel_args ={"channels":self.channels,"learning_rate": learning_rate,"lam":lam,"device":device,
                     "dtype":torch.float,"causal": causal,"kernel_dropout":kernel_dropout,"weight_init": weight_init,
                     "sequence_d":sequence_d,"hidden_state_d":hidden_state_d, "scale_factor": scale_factor, "use_prox":use_prox,"use_prox_lam":use_prox_lam}
@@ -499,14 +480,10 @@ class MonarchConv(OptimModule):
         else:
             y = torch.fft.ifft(y_f, n=2*self.L, dim=-1).real[..., :self.L] # (B C H L)
         
-        y = y + contract('bhl,ch->bchl', u, self.D)
         y = rearrange(y, '... c h l -> ... (c h) l')
         y = self.activation(y)
         y = self.forward_drop(y)
-        y = rearrange(y,"b h l -> b l h")
-        
-        y = self.output_linear(y)
-        y = rearrange(y,"b l h -> b h l")
+
         return y
 
 def main():
