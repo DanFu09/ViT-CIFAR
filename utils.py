@@ -26,7 +26,7 @@ def get_model(args):
                 "learn_dft_mat":(args.learn_dft_mat),"learning_rate":args.learning_rate,
                 "weight_init":args.weight_init,
                 "dft_lr":args.dft_lr,"learn_ifft":(args.learn_ifft),"forward_drop":args.forward_drop,
-                "fft_dropout":args.fft_dropout}
+                "fft_dropout":args.fft_dropout,"m_max":args.m_max}
         net = ViT(
             args.in_c, 
             args.num_classes, 

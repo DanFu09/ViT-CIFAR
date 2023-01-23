@@ -58,6 +58,7 @@ parser.add_argument("--dft_lr",default=0.0001,type=float)
 parser.add_argument("--learn_ifft",dest="learn_ifft",type=lambda x:bool(strtobool(x)))
 parser.add_argument("--forward_drop",default=0,type=float)
 parser.add_argument("--fft_dropout",default=0,type=float)
+parser.add_argument("--m_max",default=32,type=int)
 
 
 args = parser.parse_args()
