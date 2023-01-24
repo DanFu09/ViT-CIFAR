@@ -132,5 +132,9 @@ def get_experiment_name(args):
         experiment_name+="_mu"
     if args.off_cls_token:
         experiment_name+="_gap"
+    experiment_name+=f"_monarch_{args.use_monarch}"
+    experiment_name+=f"_kd_{args.kernel_dropout}"
+    experiment_name+=f"_lam_{args.lam}"
+    experiment_name+=f"_maxm_{args.m_max}"
     print(f"Experiment:{experiment_name}")
     return experiment_name
