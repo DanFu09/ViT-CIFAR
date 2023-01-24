@@ -57,8 +57,7 @@ class OptimModule(nn.Module):
             setattr(getattr(self, name), "_optim", optim)
 
 
-###Learnable monarch FFT########################################################
-'''PyTorch version of the block FFT convolution as described in the H3 paper.'''
+'''PyTorch version of the block FFT convolution as described in the H3 paper with learnable parameters.'''
 
 
 def ref_dft_matrix(N, H=1):
@@ -373,44 +372,8 @@ class LongConvKernel(OptimModule):
     @property
     def d_output(self):
         return self.H
-####Forward pass in BlockCONV
-
-def LinearActivation(
-        d_input, d_output, bias=True,
-        zero_bias_init=False,
-        transposed=False,
-        initializer=None,
-        activation=None,
-        activate=False, # Apply activation as part of this module
-        weight_norm=False,
-        **kwargs,
-    ):
-    """ Returns a linear nn.Module with control over axes order, initialization, and activation """
-    # Construct core module
-    # linear_cls = partial(nn.Conv1d, kernel_size=1) if transposed else nn.Linear
-    linear_cls = TransposedLinear if transposed else nn.Linear
-    if activation == 'glu': d_output *= 2
-    linear = linear_cls(d_input, d_output, bias=bias, **kwargs)
-
-    # Initialize weight
-    if initializer is not None:
-        get_initializer(initializer, activation)(linear.weight)
-
-    # Initialize bias
-    if bias and zero_bias_init:
-        nn.init.zeros_(linear.bias)
-
-    # Weight norm
-    if weight_norm:
-        linear = nn.utils.weight_norm(linear)
-
-    if activate and activation is not None:
-        activation = Activation(activation, d_output, dim=1 if transposed else -1)
-        linear = nn.Sequential(linear, activation)
-    return linear
 
 ####Learnable Block Conv################################################################################
-#first arg: Hidden, second arg: sequence dim
 
 class MonarchConv(OptimModule):
     def __init__(self,H,L,channels=1, learn_ifft=True,verbose=False,
@@ -433,7 +396,7 @@ class MonarchConv(OptimModule):
                     "dtype":torch.float,"causal": causal,"kernel_dropout":kernel_dropout,"weight_init": weight_init,
                     "sequence_d":sequence_d,"hidden_state_d":hidden_state_d, "scale_factor": scale_factor, "use_prox":use_prox,"use_prox_lam":use_prox_lam}
         
-        # SSM Kernel
+
         self.forward_drop = nn.Dropout(p=forward_drop)
         self.D = nn.Parameter(torch.randn(channels, self.H)).cuda()
         self.activation = nn.GELU()
@@ -441,15 +404,6 @@ class MonarchConv(OptimModule):
         
         self.block_fft_u = BlockFFT(**self.block_fft_conv_args)
         self.block_fft_k = BlockFFT(**self.block_fft_conv_args)
-        self.output_linear = LinearActivation(
-                self.H * self.channels,
-                self.H,
-                transposed=False,
-                initializer=None,
-                activation="glu",
-                activate=True,
-                weight_norm=False,
-            ).cuda()
 
     
     def forward(self, u, **kwargs):
